@@ -91,9 +91,56 @@ if __name__ == "__main__":
 
     for detail_page_xpath in detail_pages_xpaths:
         driver = move_page(driver, detail_page_xpath)
+        element = driver.find_element_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody/tr[1]/td[4]/a")
+        # Link(URL)
+        page_id = element.get_attribute('href').split("'")[-2]
+        print(f'URL : {page_id}')
+        element.click()
+        time.sleep(3)
+
+        # 공고종류
         element = driver.find_elements_by_xpath(
-            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[1]/td/span")
-        print(element)
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[1]/span")[0]
+        print(f"공고종류 : {element.text}", end="\n\n")
+
+        # 공고명
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[1]/em")[0]
+        print(f"공고명 : {element.text}", end="\n\n")
+
+        # 공고대상
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[2]/div[2]/dl/dd[1]")[0]
+        print(f"공고대상 : {element.text}", end="\n\n")
+
+        # 공급기관
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[2]/div[2]/dl/dd[2]")[0]
+        print(f"공급기관 : {element.text}", end="\n\n")
+
+        # 공급유형
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[2]/div[2]/dl/dd[3]")[0]
+        print(f"공급유형 : {element.text}", end="\n\n")
+
+        # 주택유형
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[2]/div[2]/dl/dd[4]")[0]
+        print(f"주택유형 : {element.text}", end="\n\n")
+
+        # TODO
+        # for loop 돌아야함
+
+        # 단지정보
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/div/ul")[0]
+        print(f"단지정보 : {element.text}")
+
+        # 위치정보
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[1]/td/span")[0]
+        print(f"위치정보 : {element.text}")
         exit()
     exit()
 
