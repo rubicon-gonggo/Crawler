@@ -141,6 +141,48 @@ if __name__ == "__main__":
         element = driver.find_elements_by_xpath(
             "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[1]/td/span")[0]
         print(f"위치정보 : {element.text}")
+
+        # 총세대수
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[2]/td[1]/span")[0]
+        print(f"총세대수 : {element.text}")
+
+        # 최초입주일
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[3]/td[1]/span[1]")[0]
+        print(f"최초입주일 : {element.text}")
+
+        # 기타사항
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[5]/td/span")[0]
+        print(f"기타사항 : {element.text}")
+
+        # 공고문pdf
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[6]/td/a")[0]
+        pdf_link = element.get_attribute('href')
+        print(f"총세대수 : {pdf_link}")
+
+        # 기타사항
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[5]/td/span")[0]
+        print(f"기타사항 : {element.text}")
+
+        # 문의처
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[1]/tbody/tr[4]/td[2]/span")[0]
+        print(f"문의처 : {element.text}")
+
+        # 공급정보
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[3]/div/table[2]/tbody/tr")[0]
+        print(f"공급정보 : {element.text}")
+
+        # 일정정보
+        element = driver.find_elements_by_xpath(
+            "/html/body/div[1]/div[2]/div[3]/div[4]/div/div[4]/table/tbody")[0]
+        print(f"일정정보 : {element.text}")
+
         exit()
     exit()
 
