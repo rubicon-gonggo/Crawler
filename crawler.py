@@ -123,7 +123,7 @@ if __name__ == "__main__":
                     candidates.append((idx+1, row))
 
             result = OrderedDict()
-            for candidate in candidates:
+            for checkpoint_num, candidate in enumerate(candidates):
                 idx, row = candidate
                 page_info = row.find_element_by_xpath(
                     '//tr[{}]/td[4]/a'.format(idx))
@@ -522,6 +522,9 @@ if __name__ == "__main__":
                             sub_dict["time"] = time.text.rstrip()
                             result[page_id]["danchis"][select_id]["date_info"]["detail"]["root"]["sub"].append(
                                 sub_dict)
+
+                with open("checkpoint_{}.json".format(checkpoint_num), "w") as json_file:
+                    json.dump(result, json_file)
     except Exception as e:
         print("ERROR : {}".format(e))
         driver.quit()
