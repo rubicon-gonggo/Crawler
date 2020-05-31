@@ -5,6 +5,7 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 from collections import OrderedDict
+import traceback
 
 
 class MyHomeCrawler:
@@ -69,17 +70,21 @@ def load_contents(driver, xpath):
 
 
 if __name__ == "__main__":
-    FINISHED_FLAG = False
-    url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcView.do"
-
-    table_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody"
-
-    driver = get_chrome_web_driver()
 
     try:
+        FINISHED_FLAG = False
+        url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcView.do"
+
+        table_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody"
+
+        driver = get_chrome_web_driver()
+
         # Load Main Page
         driver = load_page(driver, url)
         pagenation_xpaths = get_pagenation_xpaths(driver)
+        print("Here")
+        driver.quit()
+        exit()
 
         # Move Last page for check End Points of Contents
         driver = move_page(driver, pagenation_xpaths[-1])
@@ -526,6 +531,7 @@ if __name__ == "__main__":
                 with open("checkpoint_{}.json".format(checkpoint_num), "w") as json_file:
                     json.dump(result, json_file)
     except Exception as e:
+        traceback.print_exc()
         print("ERROR : {}".format(e))
         driver.quit()
         exit()
