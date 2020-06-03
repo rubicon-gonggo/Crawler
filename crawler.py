@@ -41,7 +41,7 @@ def get_pagenation_xpaths(driver):
     pagenation_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/div[2]/ul"
     pagenation = driver.find_elements_by_xpath(pagenation_xpath)[0]
     pagenation_list = pagenation.text.split("\n")
-    print(pagenation_list)
+
     num_pagenation = len(pagenation_list)
 
     candidates = []
