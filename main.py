@@ -1,13 +1,15 @@
+import json
 from crawler import (PageIDCollector, PageCrawler)
 
 if __name__ == "__main__":
-    root_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
-    test_ids = ["7138"]
+    directory = "json"
+    page_id_collector = PageIDCollector()
+    page_id_list = page_id_collector.page_id_list
 
-    generated_test_urls = ["".join([root_url, test_id])
-                           for test_id in test_ids]
+    for page_id in page_id_list:
+        url = PageIDCollector.url + page_id
+        page_crawler = PageCrawler(url)
+        crawled_info_with_json = page_crawler.crawled_info_with_json
 
-    for test_url in generated_test_urls:
-        page_crawler = PageCrawler(test_url)
-        print(f"TEST URL : {test_url}")
-        print(page_crawler.crawled_info_with_json, end="\n\n")
+        with open(directory + "page_id" + ".json", "w") as f:
+            json.dump(crawled_info_with_json, f)

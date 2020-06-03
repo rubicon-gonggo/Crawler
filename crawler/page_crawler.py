@@ -140,9 +140,7 @@ class PageCrawler:
         for idx, danchi_li in enumerate(danchi_lis):
             name = danchi_li.text
 
-            danchi_href_xpath = '//*[@id="hsmpNmLi"]/a'
-            if nums_danchi > 1:
-                danchi_href_xpath = '//*[@id="hsmpNmLi{}"]/a'.format(idx + 1)
+            danchi_href_xpath = '//*[@id="hsmpNmLi{}"]/a'.format(idx + 1)
 
             danchi_href = danchi_li.find_element_by_xpath(
                 danchi_href_xpath)
@@ -385,6 +383,8 @@ class PageCrawler:
 
             root_dict = {"sub": []}
 
+            parent_name = ""
+            child_name = ""
             for row in rows:
                 th_xpath = rows_xpath + "/th"
                 ths = row.find_elements_by_xpath(th_xpath)
@@ -394,8 +394,6 @@ class PageCrawler:
                     parent_name = ths[0].text
                     child_name = ths[1].text
                 else:
-                    if not parent_name:
-                        parent_name = ""
                     child_name = ths[0].text
 
                 condition_xpath = rows_xpath + '/td/dl/dd[1]'
