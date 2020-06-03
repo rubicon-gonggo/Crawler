@@ -60,7 +60,6 @@ class PageCrawler:
                       house_type: 주택유형 (str)
                       }
         """
-
         name_xpath = '//*[@id="sub_content"]/div/div[1]/em'
         name = self.driver.find_element_by_xpath(name_xpath).text
 
@@ -183,34 +182,41 @@ class PageCrawler:
         """
         location_xpath = '//*[@id="fullAdres"]'
         location = self.driver.find_element_by_xpath(location_xpath).text
+
         removed_map_text = location = location[:-5]
 
-        num_household_xpath = '//*[@id="sub_content"]/div/div[3]/div/table[1]/tbody/tr[2]/td[1]'
+        num_household_xpath = '//*[@id="totHshldCo"]'
         num_household = self.driver.find_element_by_xpath(
             num_household_xpath).text
 
-        move_in_date_xpath = '//*[@id="mvnPrearngeMt"]'
-        move_in_date = self.driver.find_element_by_xpath(
-            move_in_date_xpath).text
+        move_in_date_year_xpath = '//*[@id="mvnPrearngeYear"]'
+        move_in_date_year = self.driver.find_element_by_xpath(
+            move_in_date_year_xpath).text
+
+        move_in_date_month_xpath = '//*[@id="mvnPrearngeMt"]'
+        move_in_date_month = self.driver.find_element_by_xpath(
+            move_in_date_month_xpath).text
+
+        move_in_date = move_in_date_year + " " + move_in_date_month
 
         num_recruit_xpath = '//*[@id="lttotHoCo"]'
         num_recruit = self.driver.find_element_by_xpath(
             num_recruit_xpath).text
 
-        danchi_scale_xpath = '//*[@id="sub_content"]/div/div[3]/div/table[1]/tbody/tr[3]/td[2]'
+        danchi_scale_xpath = '//*[@id="dongCo"]'
         danchi_scale = self.driver.find_element_by_xpath(
             danchi_scale_xpath).text
 
-        inquire_xpath = '//*[@id="sub_content"]/div/div[3]/div/table[1]/tbody/tr[4]/td[2]'
+        inquire_xpath = '//*[@id="refrnc"]'
         inquire = self.driver.find_element_by_xpath(
             inquire_xpath).text.rstrip().replace("\n", "")
-        removed_call_icon_inquire = inquire[3:]
+        removed_call_icon_inquire = inquire[2:]
 
-        etc_xpath = '//*[@id="sub_content"]/div/div[3]/div/table[1]/tbody/tr[5]/td'
+        etc_xpath = '//*[@id="partclrMatter"]'
         etc = self.driver.find_element_by_xpath(etc_xpath).text.rstrip()
         removed_special_char_etc = etc[2:]
 
-        pdf_xpath = '//*[@id="sub_content"]/div/div[3]/div/table[1]/tbody/tr[6]/td/a'
+        pdf_xpath = '//div[contains(@class, "danjiWrap")]/table[1]/tbody/tr[6]/td/a'
         pdf_url = self.driver.find_element_by_xpath(
             pdf_xpath).get_attribute('href')
 
@@ -348,28 +354,32 @@ class PageCrawler:
                                 ...}
         """
 
-        date_info_table_xpath = '//*[@id="sub_content"]/div/div[4]/table/tbody'
+        date_info_table_xpath = '//div[contains(@class, "schInfo")]'
         date_info_table = self.driver.find_element_by_xpath(
             date_info_table_xpath)
+
         date_infos = date_info_table.find_elements_by_css_selector(
             'tr')
+
+        table_rows = range(1, len(date_infos)+1)
         validated_table_rows = range(2, len(date_infos)-1)
 
-        start_date_xpath = '//*[@id="sub_content"]/div/div[4]/table/tbody/tr[1]/td'
+        start_date_xpath = date_info_table_xpath + \
+            '//tr[{}]/td'.format(table_rows[0])
         start_date = date_infos[0].find_element_by_xpath(
             start_date_xpath).text.rstrip()
 
-        guide_info_xpath = '//*[@id="sub_content"]/div/div[4]/table/tbody/tr[{}]/td'.format(
-            len(date_infos))
+        guide_info_xpath = date_info_table_xpath + \
+            '//tr[{}]/td'.format(table_rows[-1])
         guide_info = date_infos[-1].find_element_by_xpath(
             guide_info_xpath).text.rstrip().replace("\n", " ")
         removed_special_char_guide_info = guide_info[1:]
         removed_click_char_guide_info = removed_special_char_guide_info[:-3]
         rectified_guide_info = removed_click_char_guide_info
 
-        winner_announce_date_xpath = '//*[@id="sub_content"]/div/div[4]/table/tbody/tr[{}]/td'.format(
-            len(date_infos)-1)
-        winner_announce_date = date_infos[-1].find_element_by_xpath(
+        winner_announce_date_xpath = date_info_table_xpath + \
+            '//tr[{}]/td'.format(table_rows[-2])
+        winner_announce_date = date_infos[-2].find_element_by_xpath(
             winner_announce_date_xpath).text.rstrip()
 
         # TODO
@@ -377,7 +387,7 @@ class PageCrawler:
         # so, Logic is little bit complex.
         detail_list = []
         for valid_row in validated_table_rows:
-            rows_xpath = '//*[@id="sub_content"]/div/div[4]/table/tbody/tr[{}]'.format(
+            rows_xpath = date_info_table_xpath + '//tr[{}]'.format(
                 valid_row)
             rows = self.driver.find_elements_by_xpath(rows_xpath)
 
@@ -422,11 +432,11 @@ class PageCrawler:
 if __name__ == "__main__":
     root_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
     test_ids = ["7130", "7138", "7048", "7104", "6886", "6730"]
-
+    #test_ids = ["7104"]
     generated_test_urls = ["".join([root_url, test_id])
                            for test_id in test_ids]
 
     for test_url in generated_test_urls:
-        page_crawler = PageCrawler(test_url)
         print(f"TEST URL : {test_url}")
+        page_crawler = PageCrawler(test_url)
         print(page_crawler.crawled_info_with_json, end="\n\n")
