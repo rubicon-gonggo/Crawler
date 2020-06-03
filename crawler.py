@@ -139,6 +139,35 @@ if __name__ == "__main__":
         # Peding
 
         for pagenation_xpath in pagenation_xpaths:
+            driver = move_page(driver, pagenation_xpath)
+            driver, current_contents = load_contents(driver, table_xpath)
+
+            # Get Validated Rows in Table
+            table_el = driver.find_element_by_css_selector('table.bbs_type1')
+            rows = table_el.find_elements_by_css_selector('tr')[1:]
+            candidates = []
+            for idx, row in enumerate(rows):
+                xpath = '//*[@id="schTbody"]/tr[{}]/td[1]'.format(idx+1)
+                supply_type = row.find_element_by_xpath(xpath)
+
+                if supply_type.text not in SUPPLY_TYPE_BLACKLIST:
+                    candidates.append((idx+1, row))
+
+            for checkpoint_num, candidate in enumerate(candidates):
+                idx, row = candidate
+                page_info = row.find_element_by_xpath(
+                    '//tr[{}]/td[4]/a'.format(idx))
+                page_id = page_info.get_attribute('href').split("'")[-2]
+                page_ids['ids'].append(page_id)
+
+        with open("page_ids.json", "w") as json_file:
+            json.dump(page_ids, json_file)
+
+        raise RuntimeError("Finished")
+        # TODO
+        # Peding
+
+        for pagenation_xpath in pagenation_xpaths:
             if FINISHED_FLAG:
 
                 with open("result_of_crawling.json", "w") as json_file:
