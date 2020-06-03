@@ -4,3 +4,4 @@ chromedriver
 *.zip
 env/
 *.log
+__pycache__
