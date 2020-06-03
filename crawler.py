@@ -99,10 +99,12 @@ if __name__ == "__main__":
         pagenation_xpaths = get_pagenation_xpaths(driver)
         driver = move_page(driver, pagenation_xpaths[0])
 
+        ARRIVED_END = False
+
         while True:
 
-            ARRIVED_END = False
-
+            if ARRIVED_END == True:
+                break
             # Update Pagenation
             pagenation_xpaths = get_pagenation_xpaths(driver)[3:-1]
 
