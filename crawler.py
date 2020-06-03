@@ -100,15 +100,16 @@ if __name__ == "__main__":
         driver = move_page(driver, pagenation_xpaths[0])
 
         ARRIVED_END = False
-
+        current_page_location = 1
         while True:
 
             if ARRIVED_END == True:
                 break
             # Update Pagenation
             pagenation_xpaths = get_pagenation_xpaths(driver)[3:-1]
-
+            
             for pagenation_xpath in pagenation_xpaths:
+                print("current_page : {}".format(current_page_location))
                 driver = move_page(driver, pagenation_xpath)
                 driver, current_contents = load_contents(driver, table_xpath)
 
@@ -132,6 +133,9 @@ if __name__ == "__main__":
                     if page_id == last_page_id:
                         ARRIVED_END = True
                     page_ids['ids'].append(page_id)
+                    print("\t page id : {}".format(page_id))
+
+                current_page_location += 1
 
         with open("page_ids.json", "w") as json_file:
             json.dump(page_ids, json_file)
