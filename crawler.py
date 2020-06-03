@@ -133,8 +133,8 @@ if __name__ == "__main__":
                         ARRIVED_END = True
                     page_ids['ids'].append(page_id)
 
-            with open("page_ids.json", "w") as json_file:
-                json.dump(page_ids, json_file)
+        with open("page_ids.json", "w") as json_file:
+            json.dump(page_ids, json_file)
 
         raise RuntimeError("Finished")
         # TODO
