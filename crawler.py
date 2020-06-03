@@ -72,9 +72,10 @@ def load_contents(driver, xpath):
 if __name__ == "__main__":
 
     try:
+        page_ids = {"ids": []}
         FINISHED_FLAG = False
         url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcView.do"
-
+        detail_page_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
         table_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody"
 
         driver = get_chrome_web_driver()
@@ -82,9 +83,6 @@ if __name__ == "__main__":
         # Load Main Page
         driver = load_page(driver, url)
         pagenation_xpaths = get_pagenation_xpaths(driver)
-        print("Here")
-        driver.quit()
-        exit()
 
         # Move Last page for check End Points of Contents
         driver = move_page(driver, pagenation_xpaths[-1])
@@ -102,6 +100,35 @@ if __name__ == "__main__":
 
         # Update Pagenation
         pagenation_xpaths = get_pagenation_xpaths(driver)[3:-1]
+
+        for pagenation_xpath in pagenation_xpaths:
+            driver = move_page(driver, pagenation_xpath)
+            driver, current_contents = load_contents(driver, table_xpath)
+
+            # Get Validated Rows in Table
+            table_el = driver.find_element_by_css_selector('table.bbs_type1')
+            rows = table_el.find_elements_by_css_selector('tr')[1:]
+            candidates = []
+            for idx, row in enumerate(rows):
+                xpath = '//*[@id="schTbody"]/tr[{}]/td[1]'.format(idx+1)
+                supply_type = row.find_element_by_xpath(xpath)
+
+                if supply_type.text not in SUPPLY_TYPE_BLACKLIST:
+                    candidates.append((idx+1, row))
+
+            for checkpoint_num, candidate in enumerate(candidates):
+                idx, row = candidate
+                page_info = row.find_element_by_xpath(
+                    '//tr[{}]/td[4]/a'.format(idx))
+                page_id = page_info.get_attribute('href').split("'")[-2]
+                page_ids['ids'].append(page_id)
+
+        with open("page_ids.json", "w") as json_file:
+            json.dump(page_ids, json_file)
+
+        raise RuntimeError("Finished")
+        # TODO
+        # Peding
 
         for pagenation_xpath in pagenation_xpaths:
             if FINISHED_FLAG:
