@@ -37,7 +37,7 @@ class PageIDCollector:
 
     def get_web_driver(self, url):
         """
-        initialize webdriver 
+        initialize webdriver
 
         Args:
             url (str) : List page url in Myhome
@@ -59,7 +59,7 @@ class PageIDCollector:
 
     def collect_page_id(self, driver):
         table_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody"
-        pagenation_xpaths = self.get_pagenation_xpaths(driver)
+        pagenation_xpaths = self.get_pagenation_xpaths(self.driver)
 
         page_id_list = []
         ARRIVED_END = False
@@ -69,23 +69,24 @@ class PageIDCollector:
                 break
 
             # Update Pagenation
-            pagenation_xpaths = self.get_pagenation_xpaths(driver)[3:-1]
-
+            pagenation_xpaths, keys = self.get_pagenation_xpaths(self.driver)
+            pagenation_xpaths = pagenation_xpaths[2:-1]
+            keys = keys[2: -1]
             # Refresh driver
             # Avoiding Stale Element Reference Exception in Selenium Webdriver
             driver.get(driver.current_url)
             time.sleep(2)
             driver.refresh()
 
-            for pagenation_xpath in pagenation_xpaths:
+            for index, pagenation_xpath in enumerate(pagenation_xpaths):
                 print("[INFO] Current Page Location : {}".format(
-                    current_page_location))
+                    keys[index]))
 
-                driver = self.move_page(driver, pagenation_xpath)
-                driver, _ = self.load_contents(driver, table_xpath)
+                self.driver = self.move_page(self.driver, pagenation_xpath)
+                self.driver, _ = self.load_contents(self.driver, table_xpath)
 
                 # Get Validated Rows in Table
-                table_el = driver.find_element_by_css_selector(
+                table_el = self.driver.find_element_by_css_selector(
                     'table.bbs_type1')
                 rows = table_el.find_elements_by_css_selector('tr')[1:]
 
@@ -103,6 +104,8 @@ class PageIDCollector:
                         '//tr[{}]/td[4]/a'.format(idx))
                     page_id = page_info.get_attribute('href').split("'")[-2]
 
+                    print("[INFO]\t Comparison CUR PAGE: {}, CHECKPOINT: {}".format(
+                        page_id, self.last_page_id))
                     if page_id == self.last_page_id:
                         ARRIVED_END = True
 
@@ -113,7 +116,7 @@ class PageIDCollector:
 
         return page_id_list
 
-    @staticmethod
+    @ staticmethod
     def get_pagenation_xpaths(driver):
         pagenation_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/div[2]/ul"
         pagenation = driver.find_elements_by_xpath(pagenation_xpath)[0]
@@ -125,16 +128,16 @@ class PageIDCollector:
         for i in range(1, num_pagenation + 1):
             candidates.append(f"li[{i}]")
 
-        return [os.path.join(pagenation_xpath, candidate) for candidate in candidates]
+        return [os.path.join(pagenation_xpath, candidate) for candidate in candidates], pagenation_list
 
-    @staticmethod
+    @ staticmethod
     def move_page(driver, xpath):
         element = driver.find_elements_by_xpath(xpath)[0]
         element.click()
         time.sleep(3)
         return driver
 
-    @staticmethod
+    @ staticmethod
     def load_contents(driver, xpath):
         element = driver.find_elements_by_xpath(xpath)[0]
         return driver, element

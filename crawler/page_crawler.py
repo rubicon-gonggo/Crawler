@@ -432,7 +432,7 @@ class PageCrawler:
 if __name__ == "__main__":
     root_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
     test_ids = ["7130", "7138", "7048", "7104", "6886", "6730"]
-    #test_ids = ["7104"]
+    test_ids = ["7193"]
     generated_test_urls = ["".join([root_url, test_id])
                            for test_id in test_ids]
 
