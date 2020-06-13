@@ -106,8 +106,10 @@ class PageIDCollector:
 
                     print("[INFO]\t Comparison CUR PAGE: {}, CHECKPOINT: {}".format(
                         page_id, self.last_page_id))
+                    print("TEST: ", page_id == self.last_page_id)
                     if page_id == self.last_page_id:
                         ARRIVED_END = True
+                        break
 
                     page_id_list.append(page_id)
                     print("[INFO]\t - Current page id : {}".format(page_id))

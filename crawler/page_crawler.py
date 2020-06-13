@@ -6,7 +6,7 @@ import time
 
 
 class PageCrawler:
-    def __init__(self, url: str):
+    def __init__(self, url: str, page_id: str):
         """
         Crawling detail page in MyHome
 
@@ -16,6 +16,8 @@ class PageCrawler:
         Returns:
             (PageCrawler)
         """
+        self.url = url
+        self.page_id = page_id
         self.driver = self.get_web_driver(url)
         self.driver.get(url)
         time.sleep(3)
@@ -129,11 +131,15 @@ class PageCrawler:
 
         """
 
-        danchi_ul_xpath = '//*[@id="hsmpNmUl"]'
-        danchi_ul = self.driver.find_element_by_xpath(danchi_ul_xpath)
-        danchi_lis = danchi_ul.find_elements_by_css_selector('li')
+        try:
+            danchi_ul_xpath = '//*[@id="hsmpNmUl"]'
+            danchi_ul = self.driver.find_element_by_xpath(danchi_ul_xpath)
+            danchi_lis = danchi_ul.find_elements_by_css_selector('li')
+        except:
+            print("ERROR: ", self.url)
+            return
 
-        supply_and_multi_danchi_info = {}
+        supply_and_multi_danchi_info = {'gonggo_id': self.page_id, 'dangis': []}
         nums_danchi = len(danchi_lis)
 
         for idx, danchi_li in enumerate(danchi_lis):
@@ -149,17 +155,23 @@ class PageCrawler:
             danchi_href.click()
             time.sleep(3)
 
-            supply_and_multi_danchi_info[select_id] = {}
+            d = supply_and_multi_danchi_info["dangis"]
 
             danchi_info = self.get_single_danchi_info()
             danchi_info["name"] = name
+            danchi_info.update(self.get_supply_info())
+            d.append(danchi_info)
 
-            supply_and_multi_danchi_info[select_id] = danchi_info
-            supply_and_multi_danchi_info[select_id]["supply_info"] = self.get_supply_info(
-            )
+            supply_and_multi_danchi_info["dangis"] = d
 
         schedule_info = self.get_schedule_info()
-        supply_and_multi_danchi_info["schedule_info"] = schedule_info
+        supply_and_multi_danchi_info.update(schedule_info)
+
+        try:
+            basic = self.get_basic_info()
+            supply_and_multi_danchi_info.update(basic)
+        except:
+            return None
 
         return supply_and_multi_danchi_info
 
