@@ -1,8 +1,10 @@
 import os
 import json
+import selenium
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+from pprint import pprint
 
 
 class PageIDCollector:
@@ -12,11 +14,9 @@ class PageIDCollector:
     def __init__(self, url=None, last_page_id: str = ""):
         """
         Collect validated Page ID from MyHome
-
         Args:
             url (str) : List page url in Myhome
             last_page_id (str) : lastest page id
-
         Returns:
             (selenium.webdriver.chrome.webdriver.WebDriver)
         """
@@ -31,17 +31,15 @@ class PageIDCollector:
             self.last_page_id = "128"
         self.driver = self.get_web_driver(url)
         self.driver.get(url)
-        time.sleep(3)
-        self.page_id_list = self.collect_page_id(self.driver)
+        time.sleep(10)
+        self.page_id_dict = self.collect_page_id(self.driver)
         self.driver.quit()
 
     def get_web_driver(self, url):
         """
         initialize webdriver
-
         Args:
             url (str) : List page url in Myhome
-
         Returns:
             (selenium.webdriver.chrome.webdriver.WebDriver)
         """
@@ -53,15 +51,63 @@ class PageIDCollector:
         options.add_argument("disable-gpu")
         driver = webdriver.Chrome(
             ChromeDriverManager().install(), options=options)
-        driver.implicitly_wait(3)
+        driver.implicitly_wait(1)
 
         return driver
+
+    def collect_page_id_in_one_loop(self, driver, pagenation_xpaths, keys, current_page_location):
+        table_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody"
+
+        end_signal = False
+        page_id_list = []
+
+        for index, pagenation_xpath in enumerate(pagenation_xpaths):
+            print("[INFO] Current Page Location : {}".format(
+                keys[index]))
+
+            driver = self.move_page(driver, pagenation_xpath)
+            driver, _ = self.load_contents(driver, table_xpath)
+
+            # Get Validated Rows in Table
+            driver.implicitly_wait(3)
+            table_el = driver.find_element_by_css_selector(
+                'table.bbs_type1')
+            rows = table_el.find_elements_by_css_selector('tr')[1:]
+
+            candidates = []
+            for idx, row in enumerate(rows):
+                xpath = '//*[@id="schTbody"]/tr[{}]/td[1]'.format(idx+1)
+                supply_type = row.find_element_by_xpath(xpath)
+
+                if supply_type.text not in PageIDCollector.blacklist:
+                    candidates.append((idx+1, row))
+
+            for candidate in candidates:
+                start_time = time.time()
+                idx, row = candidate
+                page_info = row.find_element_by_xpath(
+                    '//tr[{}]/td[4]/a'.format(idx))
+                page_id = page_info.get_attribute('href').split("'")[-2]
+
+                print("[INFO]\t Comparison CUR PAGE: {}, CHECKPOINT: {}".format(
+                    page_id, self.last_page_id))
+                if page_id == self.last_page_id:
+                    end_signal = True
+
+                page_id_list.append(page_id)
+                print("[INFO]\t - Current page id : {}".format(page_id))
+                end_time = time.time()
+                print("[INFO]\t - Elapsed Time: {}".format(end_time - start_time))
+
+            current_page_location += 1
+
+        return driver, page_id_list,  end_signal, current_page_location
 
     def collect_page_id(self, driver):
         table_xpath = "/html/body/div[1]/div[2]/div[3]/div[3]/div[3]/table/tbody"
         pagenation_xpaths = self.get_pagenation_xpaths(self.driver)
 
-        page_id_list = []
+        page_id_dict = {}
         ARRIVED_END = False
         current_page_location = 1
         while True:
@@ -74,11 +120,15 @@ class PageIDCollector:
             keys = keys[2: -1]
             # Refresh driver
             # Avoiding Stale Element Reference Exception in Selenium Webdriver
-            driver.get(driver.current_url)
-            time.sleep(2)
-            driver.refresh()
-
+            # self.driver.get(self.driver.current_url)
+            # time.sleep(2)
+            """
+            driver, collected_page_id_list, ARRIVED_END, current_page_location = self.collect_page_id_in_one_loop(
+                driver, pagenation_xpaths, keys, current_page_location)
+            page_id_list = page_id_list + collected_page_id_list
+            """
             for index, pagenation_xpath in enumerate(pagenation_xpaths):
+                start_time = time.time()
                 print("[INFO] Current Page Location : {}".format(
                     keys[index]))
 
@@ -100,23 +150,25 @@ class PageIDCollector:
 
                 for candidate in candidates:
                     idx, row = candidate
+                    status_objs = row.find_elements_by_xpath(
+                        '//tr[{}]/td[2]/span'.format(idx))
+                    status = "모집중" if status_objs else "모집완료"
                     page_info = row.find_element_by_xpath(
                         '//tr[{}]/td[4]/a'.format(idx))
                     page_id = page_info.get_attribute('href').split("'")[-2]
 
                     print("[INFO]\t Comparison CUR PAGE: {}, CHECKPOINT: {}".format(
                         page_id, self.last_page_id))
-                    print("TEST: ", page_id == self.last_page_id)
                     if page_id == self.last_page_id:
                         ARRIVED_END = True
-                        break
 
-                    page_id_list.append(page_id)
+                    page_id_dict[str(page_id)] = status
                     print("[INFO]\t - Current page id : {}".format(page_id))
-
+                end_time = time.time()
                 current_page_location += 1
+                print("[INFO]\t - Elapsed Time : {}".format(end_time - start_time))
 
-        return page_id_list
+        return page_id_dict
 
     @ staticmethod
     def get_pagenation_xpaths(driver):
@@ -136,7 +188,7 @@ class PageIDCollector:
     def move_page(driver, xpath):
         element = driver.find_elements_by_xpath(xpath)[0]
         element.click()
-        time.sleep(3)
+        time.sleep(10)
         return driver
 
     @ staticmethod
@@ -147,4 +199,4 @@ class PageIDCollector:
 
 if __name__ == "__main__":
     page_id_collector = PageIDCollector()
-    print(page_id_collector.page_id_list)
+    print(page_id_collector.page_id_dict)
