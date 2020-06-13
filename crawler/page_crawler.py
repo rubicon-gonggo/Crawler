@@ -24,7 +24,7 @@ class PageCrawler:
 
     def get_web_driver(self, url):
         """
-        initialize webdriver 
+        initialize webdriver
 
         Args:
             url (str) : List page url in Myhome
@@ -131,16 +131,14 @@ class PageCrawler:
 
         danchi_ul_xpath = '//*[@id="hsmpNmUl"]'
         danchi_ul = self.driver.find_element_by_xpath(danchi_ul_xpath)
-        danchi_lis = danchi_ul.find_elements_by_css_selector('li')
+        danchi_lis = danchi_ul.find_elements_by_xpath(danchi_ul_xpath+'/li')
 
         supply_and_multi_danchi_info = {}
         nums_danchi = len(danchi_lis)
 
         for idx, danchi_li in enumerate(danchi_lis):
             name = danchi_li.text
-
-            danchi_href_xpath = '//*[@id="hsmpNmLi{}"]/a'.format(idx + 1)
-
+            danchi_href_xpath = danchi_ul_xpath+'/li' + '/a'
             danchi_href = danchi_li.find_element_by_xpath(
                 danchi_href_xpath)
             select_id = danchi_href.get_attribute(
@@ -386,7 +384,9 @@ class PageCrawler:
         # Table Structure changed dinamically each page
         # so, Logic is little bit complex.
         detail_list = []
-        for valid_row in validated_table_rows:
+        p_name = []
+        c_name = []
+        for idx, valid_row in enumerate(validated_table_rows):
             rows_xpath = date_info_table_xpath + '//tr[{}]'.format(
                 valid_row)
             rows = self.driver.find_elements_by_xpath(rows_xpath)
@@ -395,16 +395,30 @@ class PageCrawler:
 
             parent_name = ""
             child_name = ""
+
             for row in rows:
                 th_xpath = rows_xpath + "/th"
                 ths = row.find_elements_by_xpath(th_xpath)
 
                 # has hierarchy
                 if len(ths) > 1:
+
                     parent_name = ths[0].text
-                    child_name = ths[1].text
-                else:
-                    child_name = ths[0].text
+                    if (len(parent_name) == 0) and (len(ths[0].text) == 0):
+                        pass
+                    else:
+                        child_name = ths[1].text
+                elif len(ths) == 1:
+                    if (len(parent_name) == 0) and (len(ths[0].text) == 0):
+                        pass
+                    else:
+                        child_name = ths[0].text
+                p_name.append(parent_name)
+                c_name.append(child_name)
+
+                if (len(p_name[idx]) == 0) and (len(c_name[idx]) == 0):
+                    parent_name = p_name[idx-1]
+                    child_name = c_name[idx-1]
 
                 condition_xpath = rows_xpath + '/td/dl/dd[1]'
                 condition = row.find_element_by_xpath(
@@ -432,7 +446,7 @@ class PageCrawler:
 if __name__ == "__main__":
     root_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
     test_ids = ["7130", "7138", "7048", "7104", "6886", "6730"]
-    test_ids = ["7193"]
+    test_ids = ["6405"]
     generated_test_urls = ["".join([root_url, test_id])
                            for test_id in test_ids]
 
