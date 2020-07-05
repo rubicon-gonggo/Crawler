@@ -308,22 +308,25 @@ class PageCrawler:
             lease_total_cost = supply_info.find_element_by_xpath(
                 lease_total_cost_xpath).text
 
-            # 모집호수-임대보증금(원)-계
+            # 모집호수-임대보증금(원)-계약금
             down_payment_xpath = '//*[@id="suplyTableBody"]/tr[{}]/td[7]'.format(
                 idx + 1)
             down_payment = supply_info.find_element_by_xpath(
                 down_payment_xpath).text
 
+            # 모집호수-임대보증금(원)-중도금
             intermediate_payment_xpath = '//*[@id="suplyTableBody"]/tr[{}]/td[8]'.format(
                 idx + 1)
             intermediate_payment = supply_info.find_element_by_xpath(
                 intermediate_payment_xpath).text
 
+            # 모집호수-임대보증금(원)-잔금
             postponing_payment_xpath = '//*[@id="suplyTableBody"]/tr[{}]/td[9]'.format(
                 idx + 1)
             postponing_payment = supply_info.find_element_by_xpath(
                 postponing_payment_xpath).text
 
+            # 모집호수-임대보증금(원)-월임대료
             rent_cost_per_month_xpath = '//*[@id="suplyTableBody"]/tr[{}]/td[10]'.format(
                 idx + 1)
             rent_cost_per_month = supply_info.find_element_by_xpath(
