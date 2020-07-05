@@ -44,6 +44,15 @@ class PageIDCollector:
         # Wait load page
         time.sleep(10)
         self.page_id_dict = self.collect_page_id(self.driver)
+
+        keys = list(self.page_id_dict.keys())
+        remove_list = []
+        for key in keys:
+            if int(key) <= int(self.last_page_id):
+                remove_list.append(key)
+        print("REMOVE LIST : {}".format(remove_list))
+        for remove_key in remove_list:
+            self.page_id_dict.pop(remove_key, None)
         self.driver.quit()
 
     def get_web_driver(self,
@@ -110,6 +119,8 @@ class PageIDCollector:
             keys = keys[2: -1]
 
             for index, pagenation_xpath in enumerate(pagenation_xpaths):
+                if is_last_page == True:
+                    break
                 start_time = time.time()
                 print("[INFO] Current Page Location : {}".format(
                     keys[index]))
@@ -134,18 +145,28 @@ class PageIDCollector:
 
                 # row의 href에서 page_id를 획득할 수 있음
                 for candidate in candidates:
+                    if is_last_page == True:
+                        break
                     idx, row = candidate
+
                     status_objs = row.find_elements_by_xpath(
                         '//tr[{}]/td[2]/span'.format(idx))
                     status = "모집중" if status_objs else "모집완료"
+
+                    region_objs = row.find_elements_by_xpath(
+                        '//*[@id="schTbody"]/tr[{}]/td[3]'.format(idx))
+                    region = region_objs[0].text if region_objs else "unknown"
+
                     page_info = row.find_element_by_xpath(
                         '//tr[{}]/td[4]/a'.format(idx))
                     page_id = page_info.get_attribute('href').split("'")[-2]
 
-                    if page_id == self.last_page_id:
+                    if int(page_id) <= int(self.last_page_id):
                         is_last_page = True
 
-                    page_id_dict[str(page_id)] = status
+                    page_id_dict[str(page_id)] = {"status": status,
+                                                  "region": region,
+                                                  "region_depth": True if "외" in region else False}
 
                     print("[INFO]\t Comparison CURRENT PAGE: {}, CHECKPOINT: {}".format(
                         page_id, self.last_page_id))
@@ -153,8 +174,8 @@ class PageIDCollector:
 
                 current_page_location += 1
                 end_time = time.time()
-                print("[INFO]\t - Elapsed Time : {}".format(end_time - start_time))
 
+                print("[INFO]\t - Elapsed Time : {}".format(end_time - start_time))
         return page_id_dict
 
     @ staticmethod

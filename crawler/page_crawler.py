@@ -5,6 +5,7 @@ from typing import Dict
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 import time
+import traceback
 
 
 class PageCrawler:
@@ -108,22 +109,21 @@ class PageCrawler:
             danchi_ul_xpath = '//*[@id="hsmpNmUl"]'
             danchi_ul = self.driver.find_element_by_xpath(danchi_ul_xpath)
             danchi_lis = danchi_ul.find_elements_by_css_selector('li')
-        except:
+        except Exception as e:
             print("ERROR: ", self.url)
+            traceback.print_exc()
             return
 
         supply_and_multi_danchi_info = {
             'gonggo_id': self.page_id, 'dangis': []}
 
         # 각 단지정보를 순회돌며 크롤링
-        for idx, danchi_li in enumerate(danchi_lis):
+        for danchi_li in danchi_lis:
             # 단지정보 이름
             name = danchi_li.text
 
             # 단지정보 버튼 href 획득
-            danchi_href_xpath = '//*[@id="hsmpNmLi{}"]/a'.format(idx + 1)
-            danchi_href = danchi_li.find_element_by_xpath(
-                danchi_href_xpath)
+            danchi_href = danchi_li.find_elements_by_css_selector("a")[0]
 
             # 해당 단지정보 버튼을 클릭 해당 단지정보 로드
             danchi_href.click()
@@ -149,7 +149,9 @@ class PageCrawler:
             # 기본정보 획득
             basic = self.get_basic_info()
             supply_and_multi_danchi_info.update(basic)
-        except:
+        except Exception as e:
+            print(e)
+            traceback.print_exc()
             return None
 
         return supply_and_multi_danchi_info
@@ -454,30 +456,34 @@ class PageCrawler:
                       }
         """
         # 공고명
-        name_xpath = '//*[@id="sub_content"]/div/div[1]/em'
-        name = self.driver.find_element_by_xpath(name_xpath).text
+        name_xpath = '//*[@id="sub_content"]/div[@class="viewArea"]/div[@class="viewTop"]/em'
+        name = self.driver.find_elements_by_xpath(name_xpath)[0].text
 
-        # 공고유형
-        supply_category_xpath = '//*[@id="sub_content"]/div/div[1]/span'
-        supply_category = self.driver.find_element_by_xpath(
-            supply_category_xpath).text
+        info_xpath = '//*[@id="sub_content"]/div[@class="viewArea"]/div[@class="basicInfo"]/div[@class="info"]'
 
         # 공고대상
-        candidates_xpath = '//*[@id="sub_content"]/div/div[2]/div[2]/dl/dd[1]'
-        candidates = [
-            candidate.text for candidate in self.driver.find_elements_by_xpath(candidates_xpath)]
+        candidates_xpath = info_xpath + '/dl/dd[1]'
+        candidates_elements = self.driver.find_elements_by_xpath(
+            candidates_xpath)
+        candidates = [candidate.text for candidate in candidates_elements]
 
         # 공급기관
-        supply_company_xpath = '//*[@id="sub_content"]/div/div[2]/div[2]/dl/dd[2]'
-        supply_company = self.driver.find_element_by_xpath(
-            supply_company_xpath).text
+        supply_company_xpath = info_xpath + '/dl/dd[1]'
+        supply_company = self.driver.find_elements_by_xpath(supply_company_xpath)[
+            0].text
+
+        # 공고유형
+        supply_category_xpath = info_xpath + '/dl/dd[2]'
+        supply_category = self.driver.find_elements_by_xpath(supply_category_xpath)[
+            0].text
 
         # 공급유형
-        supply_type_xpath = '//*[@id="sub_content"]/div/div[2]/div[2]/dl/dd[3]'
-        supply_type = self.driver.find_element_by_xpath(supply_type_xpath).text
+        supply_category_xpath = info_xpath + '/dl/dd[3]'
+        supply_type = self.driver.find_elements_by_xpath(supply_category_xpath)[
+            0].text
 
         # 주택유형
-        house_type_xpath = '//*[@id="sub_content"]/div/div[2]/div[2]/dl/dd[4]'
+        house_type_xpath = info_xpath + '/dl/dd[4]'
         house_type = self.driver.find_element_by_xpath(house_type_xpath).text
 
         return {"name": name,
@@ -491,11 +497,11 @@ class PageCrawler:
 if __name__ == "__main__":
     root_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
     test_ids = ["7130", "7138", "7048", "7104", "6886", "6730"]
-    test_ids = ["7193"]
+    test_ids = ["7321"]
     generated_test_urls = ["".join([root_url, test_id])
                            for test_id in test_ids]
 
     for test_url in generated_test_urls:
         print(f"TEST URL : {test_url}")
-        page_crawler = PageCrawler(test_url, "7193")
+        page_crawler = PageCrawler(test_url, "7321")
         print(page_crawler.crawled_info_with_json, end="\n\n")
