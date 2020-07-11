@@ -6,7 +6,7 @@ name: Cron-Job
 # events but only for the master branch
 on:
   push:
-    branchs:
+    branches:
       - master
       - develop
 
