@@ -6,8 +6,9 @@ name: Cron-Job
 # events but only for the master branch
 on:
   push:
-    - master
-    - develop
+    branchs:
+      - master
+      - develop
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
