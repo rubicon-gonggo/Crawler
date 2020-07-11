@@ -31,6 +31,7 @@ class PageCrawler:
     def get_web_driver(self, url: str) -> selenium.webdriver.chrome.webdriver.WebDriver:
         """
         셀레니움 크롬 웹 드라이버를 로드
+        
         Args:
             url (str) : 공공주택공고 리스트 URL
         Returns:
@@ -397,7 +398,9 @@ class PageCrawler:
         # Table Structure changed dinamically each page
         # so, Logic is little bit complex.
         detail_list = []
-        for valid_row in validated_table_rows:
+        p_name = []
+        c_name = []
+        for idx, valid_row in enumerate(validated_table_rows):
             rows_xpath = date_info_table_xpath + '//tr[{}]'.format(
                 valid_row)
             rows = self.driver.find_elements_by_xpath(rows_xpath)
@@ -406,16 +409,30 @@ class PageCrawler:
 
             parent_name = ""
             child_name = ""
+
             for row in rows:
                 th_xpath = rows_xpath + "/th"
                 ths = row.find_elements_by_xpath(th_xpath)
 
                 # has hierarchy
                 if len(ths) > 1:
+
                     parent_name = ths[0].text
-                    child_name = ths[1].text
-                else:
-                    child_name = ths[0].text
+                    if (len(parent_name) == 0) and (len(ths[0].text) == 0):
+                        pass
+                    else:
+                        child_name = ths[1].text
+                elif len(ths) == 1:
+                    if (len(parent_name) == 0) and (len(ths[0].text) == 0):
+                        pass
+                    else:
+                        child_name = ths[0].text
+                p_name.append(parent_name)
+                c_name.append(child_name)
+
+                if (len(p_name[idx]) == 0) and (len(c_name[idx]) == 0):
+                    parent_name = p_name[idx-1]
+                    child_name = c_name[idx-1]
 
                 condition_xpath = rows_xpath + '/td/dl/dd[1]'
                 condition = row.find_element_by_xpath(
@@ -497,7 +514,9 @@ class PageCrawler:
 if __name__ == "__main__":
     root_url = "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcDetailView.do?pblancId="
     test_ids = ["7130", "7138", "7048", "7104", "6886", "6730"]
+
     test_ids = ["7321"]
+  
     generated_test_urls = ["".join([root_url, test_id])
                            for test_id in test_ids]
 
