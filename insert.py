@@ -1,21 +1,16 @@
-import argparse
+import os
 import json
 import requests
 import time
 import traceback
 from pprint import pprint
 
-parser = argparse.ArgumentParser(description='크롤링 결과를 POST로 PRODUCTION에 반영')
-parser.add_argument('--endpoint',
-                    required=True,
-                    type=str,
-                    help='production endpoint')
 
 if __name__ == "__main__":
 
-    args = parser.parse_args()
-    endpoint = args.endpoint
+    endpoint = str(os.environ['ENDPOINT'])
     uri = endpoint + "/production/api/crawler/"
+    print(uri)
 
     with open("page_ids.json", "r") as f:
         page_ids_dict = json.load(f)

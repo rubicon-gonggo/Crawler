@@ -1,18 +1,10 @@
-import argparse
 import os
 import json
 from crawler import (PageIDCollector, PageCrawler)
 
-parser = argparse.ArgumentParser(description='크롤링 checkpoint')
-parser.add_argument('--endpoint',
-                    required=True,
-                    type=str,
-                    help='production endpoint')
 
 if __name__ == "__main__":
-
-    args = parser.parse_args()
-    endpoint = args.endpoint
+    endpoint = str(os.environ['ENDPOINT'])
     uri = endpoint + "/production/api/checkpoint/"
     print(uri)
 

@@ -42,8 +42,10 @@ jobs:
 
       - name: Page id crawling
         run: |
-          python3 page_id_collect.py --endpoint ${{ secrets.PRODUCTION_ENDPOINT }}
+          python3 page_id_collect.py
           cat page_ids.json
+        env:
+          ENDPOINT: ${{ secrets.PRODUCTION_ENDPOINT }}
 
       - name: Detail page crawling
         run: |
@@ -55,6 +57,8 @@ jobs:
       - name: update crawling result
         run: |
           echo "Finished"
+        env:
+          ENDPOINT: ${{ secrets.PRODUCTION_ENDPOINT }}
 
       - name: Slack Notification
         uses: 8398a7/action-slack@v2.6.0
