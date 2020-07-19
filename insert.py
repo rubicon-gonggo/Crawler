@@ -1,10 +1,21 @@
+import argparse
 import json
 import requests
 import time
 import traceback
 from pprint import pprint
 
+parser = argparse.ArgumentParser(description='크롤링 결과를 POST로 PRODUCTION에 반영')
+parser.add_argument('--endpoint',
+                    required=True,
+                    type=str,
+                    help='production endpoint')
+
 if __name__ == "__main__":
+
+    args = parser.parse_args()
+    endpoint = args.endpoint
+    uri = endpoint + "/production/api/crawler/"
 
     with open("page_ids.json", "r") as f:
         page_ids_dict = json.load(f)
@@ -39,9 +50,9 @@ if __name__ == "__main__":
 
             json_data = json.dumps(data)
 
-            res = requests.post('https://zdzq0bq4kd.execute-api.ap-northeast-2.amazonaws.com/production/api/crawler/', data=json_data, headers={
-                'content-type': 'application/json'
-            })
+            res = requests.post(uri,
+                                data=json_data,
+                                headers={'content-type': 'application/json'})
 
             if res.status_code == 200:
                 print("{} in {}".format(res.status_code, page_id))

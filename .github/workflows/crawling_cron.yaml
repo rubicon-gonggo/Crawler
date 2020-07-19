@@ -13,54 +13,56 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  Cron-Job:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     timeout-minutes: 180
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
-    # Runs a single command using the runners shell
-    - name: Install chrome driver
-      run: | 
-        sudo apt-get update
-        sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
-        sudo apt-get install -y default-jdk
-        sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add
-        sudo echo "deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main" >> sudo /etc/apt/sources.list.d/google-chrome.list
-        sudo apt-get -y update
-        sudo apt-get -y install google-chrome-stable tree
+      # Runs a single command using the runners shell
+      - name: Install chrome driver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
+          sudo apt-get install -y default-jdk
+          sudo curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add
+          sudo echo "deb [arch=amd64]  http://dl.google.com/linux/chrome/deb/ stable main" >> sudo /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get -y update
+          sudo apt-get -y install google-chrome-stable tree
 
-    - name: install package & Set prerequisite
-      run: |
-        sudo apt-get install -y python3-setuptools
-        pip3 install -r requirements.txt
-        mkdir json
+      - name: install package & Set prerequisite
+        run: |
+          sudo apt-get install -y python3-setuptools
+          pip3 install -r requirements.txt
+          mkdir json
 
-    - name: Page id crawling
-      run: |
-        python3 page_id_collect.py
-        cat page_ids.json
+      - name: Page id crawling
+        run: |
+          python3 page_id_collect.py --endpoint ${{ secrets.PRODUCTION_ENDPOINT }}
+          cat page_ids.json
 
-    - name: Detail page crawling
-      run: |
-        python3 page_crawler.py
-        cat error_page_id.json
-        tree -L 2 .
+      - name: Detail page crawling
+        run: |
+          python3 page_crawler.py
+          cat error_page_id.json
+          tree -L 2 .
 
-    - name: update crawling result
-      run: echo "Finished"
+      # python3 insert.py --endpoint ${{ secrets.PRODUCTION_ENDPOINT }}
+      - name: update crawling result
+        run: |
+          echo "Finished"
 
-    - name: Slack Notification
-      uses: 8398a7/action-slack@v2.6.0
-      with:
-        status: ${{job.status}}
-        fields: repo,message,commit,author,action,eventName,ref,workflow
-        author_name: 크롤링 알리미
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-      if: always()
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v2.6.0
+        with:
+          status: ${{job.status}}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          author_name: 크롤링 알리미
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # required
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+        if: always()
