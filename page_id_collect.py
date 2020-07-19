@@ -14,6 +14,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     endpoint = args.endpoint
     uri = endpoint + "/production/api/checkpoint/"
+    print(uri)
 
     directory = "json"
     page_id_collector = PageIDCollector(url=None, last_page_id="7399")
